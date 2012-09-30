@@ -13,7 +13,7 @@
 (select-module lista.env)
 
 (define *config* (call-with-input-file
-                   (build-path (home-directory) ".ls/config")
+                   (build-path (home-directory) ".lista" "config")
                    read))
 (define *colour-theme*
   (cadr  (find (lambda (e) (equal? (car e) '*colour-theme*))
@@ -26,7 +26,7 @@
 
 (define *colours*
   (with-input-from-file
-    (build-path (home-directory) ".ls/themes" *colour-theme*)
+    (build-path (home-directory) ".lista" "themes" *colour-theme*)
     read))
 
 
