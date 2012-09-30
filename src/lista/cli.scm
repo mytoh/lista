@@ -14,7 +14,7 @@
   (use gauche.sequence) ;remove
   (use gauche.charconv)
   (use util.match)
-  (use util.list) ;take*
+  (use util.list)
   (use file.util)
   (require-extension (srfi 1 13)) ;count
   (use clojure)
@@ -24,14 +24,6 @@
   )
 (select-module lista.cli)
 
-
-
-(load (build-path (home-directory) ".ls/config"))
-(define
-  *colours*
-  (with-input-from-file
-    (build-path (home-directory) ".ls/themes" *colour-theme*)
-    read))
 
 
 
@@ -61,8 +53,8 @@
        (match type
          ('regular
           (if (file-is-executable? name)
-                      (str  (ls-make-colour e name) (ls-make-colour 2 "*"))
-                      (ls-make-colour e name)))
+            (str  (ls-make-colour e name) (ls-make-colour 2 "*"))
+            (ls-make-colour e name)))
          ('directory
           (str (ls-make-colour e name) (ls-make-colour 12 "/")))
          ('symlink
@@ -72,8 +64,8 @@
       (match type
         ('regular
          (if (file-is-executable? name)
-                       #`",(ls-make-colour 4 name),(ls-make-colour 2 \"*\")"
-                       (colour-normal-file name)))
+           #`",(ls-make-colour 4 name),(ls-make-colour 2 \"*\")"
+           (colour-normal-file name)))
         ('directory
          #`",(ls-make-colour 1 name),(ls-make-colour 12 \"/\")")
         ('character
@@ -94,9 +86,9 @@
                   *normal-file-colours*)))
     (cond
       ((null? colour)
-      (ls-make-colour 14 name))
+       (ls-make-colour 14 name))
       (else
-    (ls-make-colour (cadar colour) name)))))
+        (ls-make-colour (cadar colour) name)))))
 
 
 ;; componets for display {{{
@@ -109,14 +101,14 @@
     (case type
       ((symlink)  (cond
                     (extension
-                      (if-let1 ext (ref *extension-colours* (string->symbol extension) #f)
+                      (if-let1 ext (assoc-ref *extension-colours* (string->symbol extension) #f)
                         (str (colour-filename file type ext) " -> " (ls-make-colour 10 realname))
                         (str (colour-filename file type) " -> " (ls-make-colour 10 realname))))
                     (else
                       (str (colour-filename file type) " -> " (ls-make-colour 10 realname)))))
       (else (cond
               (extension
-                (if-let1 ext (ref  *extension-colours* (string->symbol extension) #f)
+                (if-let1 ext (assoc-ref  *extension-colours* (string->symbol extension) #f)
                   (colour-filename file type ext)
                   (colour-filename file type)))
               (else
@@ -166,14 +158,14 @@
                  ((< filesize 1024)
                   (str (ls-make-colour 7  filesize) (ls-make-colour 14 "B")))
                  (else
-                  (str (ls-make-colour 7  filesize) (ls-make-colour 14 "B")))
+                   (str (ls-make-colour 7  filesize) (ls-make-colour 14 "B")))
                  )))
     (format "~35@a"
             size)))
 
 
 (define-constant *delimiters*
-    (vector
+  (vector
     (ls-make-colour 0 "├")
     (ls-make-colour 0 "┤")
     (ls-make-colour 0 "│"))
@@ -183,16 +175,16 @@
 
 (define (print-owner file stat)
   (let* ((user (if-let1 u (sys-uid->user-name (ref stat 'uid)) u (ref stat 'uid)))
-        (group (sys-gid->group-name (ref stat 'gid))))
-  (format "~a:~a"
-          (ls-make-colour 2 user)
-          (ls-make-colour 6 group))))
+         (group (sys-gid->group-name (ref stat 'gid))))
+    (format "~a:~a"
+            (ls-make-colour 2 user)
+            (ls-make-colour 6 group))))
 
 (define (print-time-format unit colour time)
   (match unit
     ('sec (format "~17@a ~a" (ls-make-colour colour time) (ls-make-colour colour "sec ")))
     ('min (format "~17@a ~a" (ls-make-colour colour (round->exact (/. time 60))) (ls-make-colour colour "min ")))
-    ('hour (format "~17@a ~a" (ls-make-colour colour (round->exact (/. (round->exact (/. time 60)) 60))) (ls-make-colour colour "hour")))
+    ('hour (format "~16@a ~a" (ls-make-colour colour (round->exact (/. (round->exact (/. time 60)) 60))) (ls-make-colour colour "hour")))
     ('day (format "~17@a ~a" (ls-make-colour colour (round->exact (/. (/. (/. time 60) 60) 24))) (ls-make-colour colour "day ")))
     ('month (format "~17@a ~a" (ls-make-colour colour (round->exact (/. (/. (/. (/. time 60) 60) 24) 30))) (ls-make-colour colour "mon ")))
     ('year (format "~17@a ~a" (ls-make-colour colour (round->exact (/. (/. (/. (/. (/. time 60) 60) 24) 30) 12))) (ls-make-colour colour "year")))
@@ -200,8 +192,8 @@
 
 (define (print-time file stat)
   (let* ((curtime (sys-time))
-        (file-time (file-ctime file))
-        (delta (- curtime file-time)))
+         (file-time (file-ctime file))
+         (delta (- curtime file-time)))
     (cond
       ;; sec
       ((< delta 10)
@@ -240,7 +232,7 @@
        (print-time-format 'month 14 delta))
       ;; year
       (else
-       (print-time-format 'year 0 delta)))))
+        (print-time-format 'year 0 delta)))))
 
 ; }}}
 
@@ -257,22 +249,6 @@
     (append dirs files)))
 
 
-
-(define-syntax define-ls-proc
-  (syntax-rules ()
-    ((_ name ls directories allfiles dfirst)
-     (define (name directories allfiles dfirst)
-       (cond
-         ((null? directories)
-          (ls (current-directory) allfiles dfirst))
-         (else
-           (let loop ((dirs directories))
-             (cond
-               ((null? dirs)
-                (values))
-               (else
-                 (ls (car dirs) allfiles dfirst)
-                 (loop (cdr dirs)))))))))))
 
 
 ;; list files with permission, size, filename
@@ -297,8 +273,8 @@
                          (print-filename f stat))))
              fullpath-list)))))
 (define-ls-proc ls-perm-size-file
-                  ls-perm-size-file-proc
-                  directories allfiles dfirst)
+                ls-perm-size-file-proc
+                directories allfiles dfirst)
 
 ;; list files with permission, filename
 (define ls-perm-file-proc
@@ -316,8 +292,8 @@
              (list-files dir)
              (normal-files dir))))))
 (define-ls-proc ls-perm-file
-                  ls-perm-file-proc
-                  directories allfiles dfirst)
+                ls-perm-file-proc
+                directories allfiles dfirst)
 
 ;; list files with permission, size, filename
 (define ls-perm-owner-file-proc
@@ -337,8 +313,8 @@
              (list-files dir)
              (normal-files dir))))))
 (define-ls-proc ls-perm-owner-file
-                  ls-perm-owner-file-proc
-                  directories allfiles dfirst)
+                ls-perm-owner-file-proc
+                directories allfiles dfirst)
 
 ;; list files with permission, owner, size, filename
 (define ls-perm-owner-size-file-proc
@@ -364,8 +340,8 @@
                          (print-filename f stat))))
              fullpath-list)))))
 (define-ls-proc ls-perm-owner-size-file
-                  ls-perm-owner-size-file-proc
-                  directories allfiles dfirst)
+                ls-perm-owner-size-file-proc
+                directories allfiles dfirst)
 
 ;; list files with permission, filename
 (define ls-perm-time-file-proc
@@ -385,8 +361,8 @@
              (list-files dir)
              (normal-files dir))))))
 (define-ls-proc ls-perm-time-file
-                  ls-perm-time-file-proc
-                  directories allfiles dfirst)
+                ls-perm-time-file-proc
+                directories allfiles dfirst)
 
 ;; list files with permission, time, size, filename
 (define ls-perm-time-size-file-proc
@@ -412,8 +388,8 @@
                          (print-filename f stat))))
              fullpath-list)))))
 (define-ls-proc ls-perm-time-size-file
-                  ls-perm-time-size-file-proc
-                  directories allfiles dfirst)
+                ls-perm-time-size-file-proc
+                directories allfiles dfirst)
 
 (define  ls-perm-owner-time-size-file-proc
   (lambda (dir allfiles dfirst)
@@ -440,8 +416,8 @@
                          (print-filename f stat))))
              fullpath-list)))))
 (define-ls-proc ls-perm-owner-time-size-file
-                  ls-perm-owner-time-size-file-proc
-                  directories allfiles dfirst)
+                ls-perm-owner-time-size-file-proc
+                directories allfiles dfirst)
 
 ;
 (define (ls-file directories allfiles dfirst)
@@ -463,7 +439,7 @@
           (extension  (path-extension file)))
     (cond
       (extension
-        (if-let1 e (ref  *extension-colours* (string->symbol extension) #f)
+        (if-let1 e (assoc-ref  *extension-colours* (string->symbol extension) #f)
           (colour-filename file type e)
           (colour-filename file type)))
       (else
@@ -528,7 +504,7 @@
   (print "help"))
 
 (define (runner args)
-  (let-args (cdr args)  
+  (let-args (cdr args)
     ((pf "pf|perm-file")
      (ptf "ptf|perm-time-file")
      (ptsf "ptsf|perm-time-size-file")
