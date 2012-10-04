@@ -1,11 +1,11 @@
 
 (install
   (
-    (run-process `(gauche-install -T ,(build-path *lehti-dist-directory* "lista")
+    (run-process `(gauche-install -T ,(build-path ( *lehti-dist-directory* ) "lista")
                                   "bin/lista")
                  :wait #t)
    ;; library sources
-   (copy-directory* (build-path *lehti-cache-directory* "lista/src")
-                    (build-path *lehti-dist-directory* "lista/src"))
+   (copy-directory* (build-path ( *lehti-cache-directory* ) "lista/src")
+                    (build-path ( *lehti-dist-directory* ) "lista/src"))
 )
 )
