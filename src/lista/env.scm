@@ -7,14 +7,13 @@
     *colours*
     *normal-file-colours*
     )
-
+  (use kirjasto.config)
   (use file.util)
   (use util.list))
 (select-module lista.env)
 
-(define *config* (call-with-input-file
-                   (build-path (home-directory) ".lista" "config")
-                   read))
+(define *config* (read-config
+                   (build-path (home-directory) ".lista" "config")))
 (define *colour-theme*
   (cadr  (find (lambda (e) (equal? (car e) '*colour-theme*))
                              *config*)))
@@ -25,8 +24,7 @@
   (assoc-ref *config* '*normal-file-colours*))
 
 (define *colours*
-  (with-input-from-file
-    (build-path (home-directory) ".lista" "themes" *colour-theme*)
-    read))
+  (read-config
+    (build-path (home-directory) ".lista" "themes" *colour-theme*)))
 
 
