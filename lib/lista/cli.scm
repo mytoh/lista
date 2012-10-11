@@ -1,4 +1,4 @@
-#!/usr/bin/env gosh
+":"; exec gosh -- $0 "$@"
 
 ;; lesser copy of ls++ by trapd00r
 ;; colour codes are hardcoded so edit this file
