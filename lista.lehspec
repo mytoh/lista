@@ -5,5 +5,7 @@
           "bin/*"
           "*.lehspec"
           "readme*"
-          "test/**/*.scm")))
+          "test/**/*.scm"))
+  '(dependencies
+     '("kirjasto")
 
